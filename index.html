@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Onyxia Gestion - Application complète</title>
+  <meta name="description" content="Onyxia Gestion : accueil, inscription, connexion et espace de saisie comptable dans un seul fichier HTML." />
+  <style>
+    :root {
+      --bg: #f6f7f4;
+      --surface: #ffffff;
+      --surface-2: #eef3ee;
+      --ink: #17231d;
+      --muted: #65736b;
+      --line: #dce5dd;
+      --green: #1f5f42;
+      --green-dark: #163d2d;
+      --gold: #d9b451;
+      --red: #b84a4a;
+      --blue: #34699a;
+      --shadow: 0 18px 42px rgba(23, 35, 29, 0.08);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; color: var(--ink); background: var(--bg); line-height: 1.55; }
+    body.app-mode .public-page { display: none; }
+    body:not(.app-mode) .app-shell { display: none; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    input, select, textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 9px 11px;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea { resize: vertical; }
+    input:focus, select:focus, textarea:focus, button:focus-visible {
+      outline: 3px solid rgba(31, 95, 66, 0.18);
+      border-color: rgba(31, 95, 66, 0.45);
+    }
+
+    .container { width: min(1160px, calc(100% - 34px)); margin: 0 auto; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 74px;
+      padding: 14px max(18px, calc((100vw - 1160px) / 2));
+      border-bottom: 1px solid rgba(220, 229, 221, 0.85);
+      background: rgba(246, 247, 244, 0.92);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 950; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius);
+      background: var(--green-dark);
+      color: var(--gold);
+      font-weight: 950;
+    }
+    .nav, .actions, .button-row, .tabs { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .nav a { color: var(--muted); font-weight: 850; }
+    .btn, .tab-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      padding: 0 15px;
+      font-weight: 900;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+      white-space: nowrap;
+    }
+    .btn:hover, .tab-button:hover { transform: translateY(-1px); }
+    .btn-primary, .tab-button.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      box-shadow: 0 12px 24px rgba(31, 95, 66, 0.2);
+    }
+    .btn-soft { color: var(--green-dark); background: #e8f3ec; border-color: rgba(31, 95, 66, 0.16); }
+    .btn-ghost, .tab-button { background: #fff; color: var(--ink); border-color: var(--line); }
+    .btn-danger { background: #fbebeb; color: #8f2d2d; border-color: #e8baba; }
+
+    .hero { padding: 66px 0 44px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(360px, .98fr); gap: 42px; align-items: center; }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: .76rem;
+      font-weight: 950;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 0; font-size: clamp(2.35rem, 5vw, 4.6rem); line-height: .98; letter-spacing: 0; }
+    h2 { margin-bottom: 0; font-size: clamp(1.55rem, 2.4vw, 2.5rem); line-height: 1.08; letter-spacing: 0; }
+    h3 { margin-bottom: 8px; }
+    .lead { max-width: 680px; margin: 22px 0 26px; color: var(--muted); font-size: 1.08rem; }
+    .trust { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 24px; color: var(--muted); font-size: .92rem; font-weight: 850; }
+    .trust span { padding: 8px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.75); }
+
+    .preview, .auth-card, .panel, .metric, .feature {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .preview { overflow: hidden; }
+    .preview-top { min-height: 44px; display: flex; gap: 7px; align-items: center; padding: 0 14px; border-bottom: 1px solid var(--line); }
+    .preview-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+    .preview-body { display: grid; grid-template-columns: .72fr 1fr; }
+    .preview-side { display: grid; align-content: start; gap: 10px; min-height: 350px; padding: 16px; color: #f8fbf8; background: var(--green-dark); }
+    .preview-side span { padding: 10px 12px; border-radius: var(--radius); background: rgba(255,255,255,.08); font-weight: 850; }
+    .preview-main { display: grid; gap: 12px; padding: 16px; }
+    .preview-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .mini-card { padding: 14px; border: 1px solid var(--line); border-left: 5px solid var(--green); border-radius: var(--radius); background: #f8faf7; }
+    .mini-card.red { border-left-color: var(--red); }
+    .mini-card.blue { border-left-color: var(--blue); }
+    .mini-card strong { display: block; margin-top: 4px; font-size: 1.15rem; }
+    .bars { display: flex; align-items: end; gap: 9px; min-height: 140px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(180deg, #f7faf7, #fff); }
+    .bars i { flex: 1; min-height: 24px; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, var(--green), var(--green-dark)); }
+
+    .section { padding: 56px 0; }
+    .section-head { max-width: 760px; margin-bottom: 26px; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+    .feature { padding: 20px; }
+    .feature b { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius); color: var(--green-dark); background: #e9f4ed; }
+    .feature p { margin: 0; color: var(--muted); }
+
+    .auth-section { padding: 58px 0 78px; color: #fff; background: var(--green-dark); }
+    .auth-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(360px, .88fr); gap: 36px; align-items: start; }
+    .auth-section .eyebrow { color: var(--gold); }
+    .auth-section .lead { color: rgba(255,255,255,.75); }
+    .auth-card { padding: 22px; color: var(--ink); }
+    .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .auth-tabs button { min-height: 40px; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; font-weight: 900; }
+    .auth-tabs button.active { color: #fff; border-color: transparent; background: var(--green); }
+    .auth-form { display: none; gap: 12px; }
+    .auth-form.active { display: grid; }
+    .auth-form.register.active { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .wide { grid-column: 1 / -1; }
+    label { display: grid; gap: 6px; color: var(--muted); font-weight: 850; font-size: .9rem; }
+    .check-line { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-weight: 750; }
+    .check-line input { width: auto; min-height: auto; margin-top: 5px; }
+    .status { min-height: 22px; margin: 0; font-weight: 850; color: var(--muted); }
+    .status.error { color: var(--red); }
+    .status.success { color: var(--green); }
+
+    .app-shell { min-height: 100vh; }
+    .app-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 24px;
+      color: #f8fbf8;
+      background: linear-gradient(135deg, var(--green-dark), #1f4d38);
+      box-shadow: 0 12px 30px rgba(24, 36, 28, 0.16);
+    }
+    .app-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+    .app-nav button {
+      min-height: 40px;
+      border: 0;
+      border-radius: var(--radius);
+      padding: 0 12px;
+      background: transparent;
+      color: rgba(255,255,255,.78);
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .app-nav button.active, .app-nav button:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .app-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .app-main { padding: 28px; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .view-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: minmax(320px, .82fr) minmax(0, 1.25fr); gap: 14px; align-items: start; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .metric { padding: 18px; border-left: 5px solid var(--green); }
+    .metric.red { border-left-color: var(--red); }
+    .metric.blue { border-left-color: var(--blue); }
+    .metric.gold { border-left-color: var(--gold); }
+    .metric span, .metric small { color: var(--muted); }
+    .metric strong { display: block; margin: 8px 0 6px; font-size: clamp(1.3rem, 2vw, 1.9rem); }
+    .panel { padding: 18px; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 780px; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid var(--line); padding: 12px 10px; text-align: left; vertical-align: middle; }
+    th { color: var(--muted); font-size: .76rem; text-transform: uppercase; }
+    .right { text-align: right; }
+    .pill { display: inline-flex; align-items: center; justify-content: center; min-height: 26px; border-radius: 999px; padding: 0 10px; font-size: .78rem; font-weight: 950; background: #edf2ef; color: var(--green-dark); }
+    .pill.red { background: #f8e8e8; color: #8f2d2d; }
+    .pill.blue { background: #e7f0f8; color: #275a85; }
+    .empty { text-align: center; color: var(--muted); padding: 28px !important; }
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      max-width: min(390px, calc(100vw - 48px));
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      border-radius: var(--radius);
+      background: var(--green-dark);
+      color: #fff;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    .footer { padding: 28px 0; color: rgba(255,255,255,.75); background: #101912; }
+    .footer-grid { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+
+    @media (max-width: 1000px) {
+      .hero-grid, .auth-grid, .grid-2 { grid-template-columns: 1fr; }
+      .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .topbar, .app-topbar, .view-head, .panel-header { align-items: flex-start; flex-direction: column; }
+      .app-actions { margin-left: 0; }
+      .nav, .actions, .app-nav { width: 100%; }
+      .grid-4, .grid-3, .form-grid, .preview-body, .preview-metrics, .auth-form.register.active { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .btn { width: 100%; }
+      .app-main { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="public-page">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Accueil Onyxia Gestion">
+        <span class="brand-mark">OG</span>
+        <span>Onyxia Gestion</span>
+      </a>
+      <nav class="nav" aria-label="Navigation">
+        <a href="#solution">Solution</a>
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#acces">Connexion</a>
+      </nav>
+      <div class="actions">
+        <a class="btn btn-ghost" href="#acces" data-show-login>Se connecter</a>
+        <a class="btn btn-primary" href="#acces" data-open-register>Créer un compte</a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div>
+            <p class="eyebrow">Gestion financière pour petites entreprises</p>
+            <h1>Gérez vos devis, factures, dépenses et paiements sans logiciel compliqué.</h1>
+            <p class="lead">Onyxia Gestion centralise la saisie comptable, la préparation des rapports, les documents et les exports dans un seul espace clair.</p>
+            <div class="button-row">
+              <a class="btn btn-primary" href="#acces" data-open-register>Commencer maintenant</a>
+              <a class="btn btn-soft" href="#acces" data-show-login>J'ai déjà un compte</a>
+            </div>
+            <div class="trust">
+              <span>Inscription locale</span>
+              <span>Factures & devis</span>
+              <span>Dépenses</span>
+              <span>Exports CSV</span>
+            </div>
+          </div>
+
+          <aside class="preview" aria-label="Aperçu Onyxia Gestion">
+            <div class="preview-top"><span class="preview-dot"></span><span class="preview-dot"></span><span class="preview-dot"></span><strong style="margin-left:auto">Espace de gestion</strong></div>
+            <div class="preview-body">
+              <div class="preview-side">
+                <b>OG</b>
+                <span>Tableau de bord</span>
+                <span>Comptabilité</span>
+                <span>Factures</span>
+                <span>Documents</span>
+              </div>
+              <div class="preview-main">
+                <div class="preview-metrics">
+                  <article class="mini-card"><small>Recettes</small><strong>8 750 EUR</strong></article>
+                  <article class="mini-card red"><small>Dépenses</small><strong>2 140 EUR</strong></article>
+                  <article class="mini-card blue"><small>Trésorerie</small><strong>6 610 EUR</strong></article>
+                  <article class="mini-card"><small>TVA estimée</small><strong>991 EUR</strong></article>
+                </div>
+                <div class="bars" aria-hidden="true">
+                  <i style="height:32%"></i><i style="height:58%"></i><i style="height:44%"></i><i style="height:72%"></i><i style="height:50%"></i><i style="height:82%"></i><i style="height:62%"></i><i style="height:90%"></i>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="solution">
+        <div class="container">
+          <div class="section-head">
+            <p class="eyebrow">Solution</p>
+            <h2>Un seul fichier HTML pour présenter et utiliser l'application.</h2>
+            <p class="lead">Cette version fonctionne directement dans le navigateur et sauvegarde les données localement. Elle est idéale pour une démonstration, GitHub Pages ou une première version simple.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="fonctionnalites">
+        <div class="container">
+          <div class="section-head">
+            <p class="eyebrow">Fonctionnalités</p>
+            <h2>Les bases utiles pour remplir les données de comptabilité.</h2>
+          </div>
+          <div class="features">
+            <article class="feature"><b>01</b><h3>Inscription & connexion</h3><p>Créez un compte local puis ouvrez votre espace de gestion.</p></article>
+            <article class="feature"><b>02</b><h3>Saisie comptable</h3><p>Ajoutez recettes, dépenses, TVA, statut, compte et notes.</p></article>
+            <article class="feature"><b>03</b><h3>Clients et documents</h3><p>Enregistrez clients, devis, factures et justificatifs.</p></article>
+            <article class="feature"><b>04</b><h3>Exports</h3><p>Exportez vos données en CSV ou sauvegardez en JSON.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-section" id="acces">
+        <div class="container auth-grid">
+          <div>
+            <p class="eyebrow">Accès utilisateur</p>
+            <h2>Inscrivez-vous ou connectez-vous pour remplir vos données.</h2>
+            <p class="lead">Les identifiants et données sont stockés dans votre navigateur pour cette version simple.</p>
+          </div>
+          <div class="auth-card">
+            <div class="auth-tabs">
+              <button class="active" type="button" data-auth-tab="login">Connexion</button>
+              <button type="button" data-auth-tab="register">Inscription</button>
+            </div>
+            <form class="auth-form active" data-auth-form="login">
+              <label><span>Email ou téléphone</span><input type="text" name="username" autocomplete="username" required /></label>
+              <label><span>Mot de passe</span><input type="password" name="password" autocomplete="current-password" required /></label>
+              <button class="btn btn-primary" type="submit">Se connecter</button>
+              <p class="status" data-login-status></p>
+            </form>
+            <form class="auth-form register" data-auth-form="register">
+              <label><span>Nom complet</span><input type="text" name="name" autocomplete="name" required /></label>
+              <label><span>Email</span><input type="email" name="email" autocomplete="email" required /></label>
+              <label><span>Téléphone</span><input type="tel" name="phone" autocomplete="tel" /></label>
+              <label><span>Entreprise</span><input type="text" name="company" autocomplete="organization" placeholder="Nom de l'entreprise" /></label>
+              <label><span>Pays</span><input type="text" name="country" autocomplete="country-name" /></label>
+              <label><span>Devise</span><select name="currency"><option value="EUR">EUR - Euro</option><option value="USD">USD - Dollar américain</option><option value="GBP">GBP - Livre sterling</option><option value="MUR">MUR - Roupie mauricienne</option><option value="CAD">CAD - Dollar canadien</option><option value="CHF">CHF - Franc suisse</option><option value="AED">AED - Dirham des Émirats</option><option value="XOF">XOF - Franc CFA BCEAO</option><option value="XAF">XAF - Franc CFA BEAC</option></select></label>
+              <label><span>Mot de passe</span><input type="password" name="password" autocomplete="new-password" minlength="6" required /></label>
+              <label><span>Confirmer le mot de passe</span><input type="password" name="confirmPassword" autocomplete="new-password" minlength="6" required /></label>
+              <label class="wide"><span>Objectif</span><textarea name="goal" rows="3" placeholder="Exemple : suivre mes dépenses et préparer mes exports comptables."></textarea></label>
+              <label class="check-line wide"><input type="checkbox" name="accept" required /><span>Je comprends que cette version garde les données localement dans mon navigateur.</span></label>
+              <button class="btn btn-primary wide" type="submit">Créer mon compte</button>
+              <p class="status wide" data-register-status></p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer"><div class="container footer-grid"><strong>Onyxia Gestion</strong><span>Outil de gestion financière, facturation et préparation comptable.</span></div></footer>
+  </div>
+
+  <div class="app-shell">
+    <header class="app-topbar">
+      <a class="brand" href="#" aria-label="Onyxia Gestion"><span class="brand-mark">OG</span><span><strong>Onyxia Gestion</strong><br><small>Comptabilité simplifiée</small></span></a>
+      <nav class="app-nav" aria-label="Navigation application">
+        <button class="active" type="button" data-view="dashboard">Tableau de bord</button>
+        <button type="button" data-view="accounting">Saisie comptable</button>
+        <button type="button" data-view="clients">Clients</button>
+        <button type="button" data-view="sales">Devis & factures</button>
+        <button type="button" data-view="documents">Documents</button>
+        <button type="button" data-view="settings">Paramètres</button>
+      </nav>
+      <div class="app-actions">
+        <button class="btn btn-soft" type="button" id="export-json">Sauvegarde JSON</button>
+        <button class="btn btn-ghost" type="button" id="logout">Déconnexion</button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="view active" id="view-dashboard">
+        <div class="view-head">
+          <div><p class="eyebrow">Tableau de bord</p><h2 id="dashboard-title">Bienvenue</h2><p class="lead">Une gestion claire de vos recettes, dépenses, TVA et paiements.</p></div>
+          <input id="month-filter" type="month" />
+        </div>
+        <div class="grid-4">
+          <article class="metric"><span>Recettes HT</span><strong id="metric-income">0</strong><small>Mois sélectionné</small></article>
+          <article class="metric red"><span>Dépenses HT</span><strong id="metric-expense">0</strong><small>Mois sélectionné</small></article>
+          <article class="metric blue"><span>Solde</span><strong id="metric-balance">0</strong><small>Recettes - dépenses</small></article>
+          <article class="metric gold"><span>TVA estimée</span><strong id="metric-vat">0</strong><small>Collectée - déductible</small></article>
+        </div>
+        <section class="panel" style="margin-top:14px">
+          <div class="panel-header"><div><p class="eyebrow">Activité</p><h3>Dernières écritures</h3></div><button class="btn btn-primary" type="button" data-jump="accounting">Ajouter une écriture</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Libellé</th><th>Catégorie</th><th>Statut</th><th class="right">Montant TTC</th></tr></thead><tbody id="recent-rows"></tbody></table></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-accounting">
+        <div class="view-head"><div><p class="eyebrow">Saisie comptable</p><h2>Remplir les données de comptabilité</h2><p class="lead">Ajoutez vos recettes, dépenses, TVA, comptes et notes. Les calculs se mettent à jour automatiquement.</p></div></div>
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Nouvelle écriture</p><h3>Recette ou dépense</h3></div></div>
+            <form class="form-grid" id="entry-form">
+              <label><span>Type</span><select id="entry-type"><option value="income">Recette</option><option value="expense">Dépense</option></select></label>
+              <label><span>Date</span><input id="entry-date" type="date" required /></label>
+              <label class="wide"><span>Libellé</span><input id="entry-label" type="text" placeholder="Exemple : facture client, achat logiciel..." required /></label>
+              <label><span>Catégorie</span><select id="entry-category"></select></label>
+              <label><span>Compte</span><select id="entry-account"><option>Banque</option><option>Caisse</option><option>Carte pro</option><option>Mobile money</option></select></label>
+              <label><span>Montant HT</span><input id="entry-amount" type="number" min="0" step="0.01" required /></label>
+              <label><span>TVA</span><select id="entry-vat"><option value="0">0%</option><option value="5">5%</option><option value="10">10%</option><option value="15" selected>15%</option><option value="20">20%</option></select></label>
+              <label><span>Statut</span><select id="entry-status"><option value="pending">À régler</option><option value="paid">Payée</option></select></label>
+              <label class="wide"><span>Note</span><textarea id="entry-note" rows="3"></textarea></label>
+              <button class="btn btn-primary wide" type="submit">Enregistrer l'écriture</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Liste</p><h3>Écritures enregistrées</h3></div><button class="btn btn-soft" type="button" id="export-csv">Exporter CSV</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Libellé</th><th>Catégorie</th><th>Compte</th><th class="right">HT</th><th class="right">TTC</th><th></th></tr></thead><tbody id="entry-rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-clients">
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Clients</p><h3>Ajouter un client</h3></div></div>
+            <form class="form-grid" id="client-form">
+              <label><span>Nom</span><input id="client-name" type="text" required /></label>
+              <label><span>Email</span><input id="client-email" type="email" /></label>
+              <label><span>Téléphone</span><input id="client-phone" type="text" /></label>
+              <label><span>Délai</span><select id="client-terms"><option>Comptant</option><option>15 jours</option><option>30 jours</option></select></label>
+              <label class="wide"><span>Adresse</span><textarea id="client-address" rows="3"></textarea></label>
+              <button class="btn btn-primary wide" type="submit">Ajouter le client</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Carnet</p><h3>Clients enregistrés</h3></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Délai</th><th></th></tr></thead><tbody id="client-rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-sales">
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Devis & factures</p><h3>Créer un document</h3></div></div>
+            <form class="form-grid" id="sale-form">
+              <label><span>Type</span><select id="sale-type"><option value="quote">Devis</option><option value="invoice">Facture</option></select></label>
+              <label><span>Numéro</span><input id="sale-number" type="text" placeholder="DEV-2026-0001" required /></label>
+              <label><span>Client</span><select id="sale-client"></select></label>
+              <label><span>Date</span><input id="sale-date" type="date" /></label>
+              <label><span>Échéance / validité</span><input id="sale-due" type="date" /></label>
+              <label><span>Montant HT</span><input id="sale-amount" type="number" min="0" step="0.01" required /></label>
+              <label><span>TVA</span><select id="sale-vat"><option value="0">0%</option><option value="15" selected>15%</option><option value="20">20%</option></select></label>
+              <label><span>Statut</span><select id="sale-status"><option value="draft">Brouillon</option><option value="sent">Envoyé</option><option value="paid">Payé</option><option value="accepted">Accepté</option></select></label>
+              <label class="wide"><span>Note</span><textarea id="sale-note" rows="3"></textarea></label>
+              <button class="btn btn-primary wide" type="submit">Enregistrer</button>
+            </form>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Registre</p><h3>Documents commerciaux</h3></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Type</th><th>Numéro</th><th>Client</th><th>Date</th><th>Statut</th><th class="right">TTC</th><th></th></tr></thead><tbody id="sale-rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-documents">
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Documents</p><h3>Importer un justificatif</h3></div></div>
+            <label><span>PDF, JPG ou PNG</span><input id="document-file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple /></label>
+            <p class="lead">Déposez vos documents, l'assistant les classe localement pour préparer les informations comptables.</p>
+          </section>
+          <section class="panel">
+            <div class="panel-header"><div><p class="eyebrow">Documents</p><h3>Fichiers importés</h3></div></div>
+            <div class="table-wrap"><table><thead><tr><th>Fichier</th><th>Type</th><th>Date</th><th>Statut</th></tr></thead><tbody id="document-rows"></tbody></table></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <section class="panel">
+          <div class="panel-header"><div><p class="eyebrow">Paramètres</p><h3>Entreprise</h3></div></div>
+          <form class="form-grid" id="settings-form">
+            <label><span>Nom entreprise</span><input id="setting-company" type="text" /></label>
+            <label><span>Devise</span><select id="setting-currency"><option value="EUR">EUR - Euro</option><option value="USD">USD - Dollar américain</option><option value="GBP">GBP - Livre sterling</option><option value="MUR">MUR - Roupie mauricienne</option><option value="CAD">CAD - Dollar canadien</option><option value="CHF">CHF - Franc suisse</option><option value="AED">AED - Dirham des Émirats</option><option value="XOF">XOF - Franc CFA BCEAO</option><option value="XAF">XAF - Franc CFA BEAC</option></select></label>
+            <label><span>Email</span><input id="setting-email" type="email" /></label>
+            <label><span>Téléphone</span><input id="setting-phone" type="text" /></label>
+            <label class="wide"><span>Adresse</span><textarea id="setting-address" rows="2"></textarea></label>
+            <label class="wide"><span>Texte légal</span><textarea id="setting-legal" rows="3"></textarea></label>
+            <button class="btn btn-primary wide" type="submit">Sauvegarder les paramètres</button>
+          </form>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const USER_KEY = "onyxia_single_user";
+    const SESSION_KEY = "onyxia_single_session";
+    const DATA_KEY = "onyxia_single_data";
+
+    const today = new Date();
+    const todayText = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const monthText = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+    const incomeCategories = ["Ventes", "Prestations", "Abonnement", "Autre recette"];
+    const expenseCategories = ["Achats", "Loyer", "Transport", "Marketing", "Logiciels", "Honoraires", "Taxes", "Autre dépense"];
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+    function defaultData(account = {}) {
+      return {
+        settings: {
+          company: account.company || "Entreprise",
+          email: account.email || "",
+          phone: account.phone || "",
+          address: "",
+          currency: account.currency || "EUR",
+          legal: "Les rapports sont fournis à titre de suivi interne et peuvent être exportés pour votre comptable."
+        },
+        entries: [],
+        clients: [],
+        sales: [],
+        documents: []
+      };
+    }
+
+    let state = loadData();
+
+    function loadData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(DATA_KEY) || "null");
+        if (saved) return { ...defaultData(), ...saved, settings: { ...defaultData().settings, ...(saved.settings || {}) } };
+      } catch {}
+      return defaultData(JSON.parse(localStorage.getItem(USER_KEY) || "null") || {});
+    }
+
+    function saveData() {
+      localStorage.setItem(DATA_KEY, JSON.stringify(state));
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat("fr-FR", { style: "currency", currency: state.settings.currency || "EUR", currencyDisplay: "code", maximumFractionDigits: 0 }).format(Number(value) || 0);
+    }
+
+    function uid(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("visible"), 2600);
+    }
+
+    function showAuth(mode) {
+      $$("[data-auth-tab]").forEach((button) => button.classList.toggle("active", button.dataset.authTab === mode));
+      $$("[data-auth-form]").forEach((form) => form.classList.toggle("active", form.dataset.authForm === mode));
+      $("#acces")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function setStatus(selector, message, type = "") {
+      const target = $(selector);
+      if (!target) return;
+      target.textContent = message;
+      target.className = `status ${type}`.trim();
+    }
+
+    function setMode() {
+      document.body.classList.toggle("app-mode", Boolean(localStorage.getItem(SESSION_KEY)));
+      if (document.body.classList.contains("app-mode")) renderAll();
+    }
+
+    $$("[data-auth-tab]").forEach((button) => button.addEventListener("click", () => showAuth(button.dataset.authTab)));
+    $$("[data-open-register]").forEach((link) => link.addEventListener("click", () => showAuth("register")));
+    $$("[data-show-login]").forEach((link) => link.addEventListener("click", () => showAuth("login")));
+
+    $('[data-auth-form="register"]').addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+      if (data.password !== data.confirmPassword) return setStatus("[data-register-status]", "Les mots de passe ne sont pas identiques.", "error");
+      const account = { name: data.name, email: data.email, phone: data.phone || "", company: data.company || "", country: data.country || "", currency: data.currency || "EUR", password: data.password };
+      localStorage.setItem(USER_KEY, JSON.stringify(account));
+      localStorage.setItem(SESSION_KEY, "1");
+      state = defaultData(account);
+      saveData();
+      setStatus("[data-register-status]", "Compte créé. Ouverture de l'espace...", "success");
+      setTimeout(setMode, 400);
+    });
+
+    $('[data-auth-form="login"]').addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+      const saved = JSON.parse(localStorage.getItem(USER_KEY) || "null");
+      if (!saved) {
+        setStatus("[data-login-status]", "Aucun compte trouvé. Créez d'abord un compte.", "error");
+        showAuth("register");
+        return;
+      }
+      const sameUser = [saved.email, saved.phone, saved.name].filter(Boolean).includes(data.username);
+      if (!sameUser || saved.password !== data.password) return setStatus("[data-login-status]", "Identifiants incorrects.", "error");
+      localStorage.setItem(SESSION_KEY, "1");
+      setStatus("[data-login-status]", "Connexion réussie.", "success");
+      setTimeout(setMode, 300);
+    });
+
+    $$(".app-nav button").forEach((button) => {
+      button.addEventListener("click", () => switchView(button.dataset.view));
+    });
+
+    document.addEventListener("click", (event) => {
+      const jump = event.target.closest("[data-jump]");
+      if (jump) switchView(jump.dataset.jump);
+      const del = event.target.closest("[data-delete]");
+      if (del) deleteItem(del.dataset.collection, del.dataset.delete);
+    });
+
+    $("#logout").addEventListener("click", () => {
+      localStorage.removeItem(SESSION_KEY);
+      document.body.classList.remove("app-mode");
+      showAuth("login");
+    });
+
+    $("#month-filter").value = monthText;
+    $("#entry-date").value = todayText;
+    $("#sale-date").value = todayText;
+    $("#entry-type").addEventListener("change", renderCategoryOptions);
+    $("#month-filter").addEventListener("change", renderAll);
+    $("#export-json").addEventListener("click", () => download("onyxia-sauvegarde.json", JSON.stringify(state, null, 2), "application/json"));
+    $("#export-csv").addEventListener("click", exportEntriesCsv);
+
+    $("#entry-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const amount = Number($("#entry-amount").value);
+      if (amount <= 0) return showToast("Ajoutez un montant valide.");
+      state.entries.push({
+        id: uid("entry"),
+        type: $("#entry-type").value,
+        date: $("#entry-date").value || todayText,
+        label: $("#entry-label").value.trim(),
+        category: $("#entry-category").value,
+        account: $("#entry-account").value,
+        amount,
+        vatRate: Number($("#entry-vat").value),
+        status: $("#entry-status").value,
+        note: $("#entry-note").value.trim()
+      });
+      event.currentTarget.reset();
+      $("#entry-date").value = todayText;
+      renderCategoryOptions();
+      saveData();
+      renderAll();
+      showToast("Écriture enregistrée.");
+    });
+
+    $("#client-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      state.clients.push({
+        id: uid("client"),
+        name: $("#client-name").value.trim(),
+        email: $("#client-email").value.trim(),
+        phone: $("#client-phone").value.trim(),
+        terms: $("#client-terms").value,
+        address: $("#client-address").value.trim()
+      });
+      event.currentTarget.reset();
+      saveData();
+      renderAll();
+      showToast("Client ajouté.");
+    });
+
+    $("#sale-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const amount = Number($("#sale-amount").value);
+      if (amount <= 0) return showToast("Ajoutez un montant valide.");
+      state.sales.push({
+        id: uid("sale"),
+        type: $("#sale-type").value,
+        number: $("#sale-number").value.trim(),
+        clientId: $("#sale-client").value,
+        date: $("#sale-date").value || todayText,
+        due: $("#sale-due").value,
+        amount,
+        vatRate: Number($("#sale-vat").value),
+        status: $("#sale-status").value,
+        note: $("#sale-note").value.trim()
+      });
+      event.currentTarget.reset();
+      $("#sale-date").value = todayText;
+      saveData();
+      renderAll();
+      showToast("Document enregistré.");
+    });
+
+    $("#document-file").addEventListener("change", (event) => {
+      Array.from(event.target.files || []).forEach((file) => {
+        state.documents.unshift({ id: uid("doc"), filename: file.name, type: file.type || "document", date: todayText, status: "À vérifier" });
+      });
+      event.target.value = "";
+      saveData();
+      renderAll();
+      showToast("Document importé.");
+    });
+
+    $("#settings-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      state.settings.company = $("#setting-company").value.trim() || "Entreprise";
+      state.settings.currency = $("#setting-currency").value;
+      state.settings.email = $("#setting-email").value.trim();
+      state.settings.phone = $("#setting-phone").value.trim();
+      state.settings.address = $("#setting-address").value.trim();
+      state.settings.legal = $("#setting-legal").value.trim();
+      saveData();
+      renderAll();
+      showToast("Paramètres sauvegardés.");
+    });
+
+    function switchView(view) {
+      $$(".app-nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+      $$(".view").forEach((panel) => panel.classList.toggle("active", panel.id === `view-${view}`));
+      renderAll();
+    }
+
+    function renderCategoryOptions() {
+      const items = $("#entry-type").value === "income" ? incomeCategories : expenseCategories;
+      $("#entry-category").innerHTML = items.map((item) => `<option>${escapeHtml(item)}</option>`).join("");
+    }
+
+    function entryTotals(entry) {
+      const ht = Number(entry.amount) || 0;
+      const vat = ht * (Number(entry.vatRate) / 100);
+      return { ht, vat, ttc: ht + vat };
+    }
+
+    function saleTotals(sale) {
+      const ht = Number(sale.amount) || 0;
+      const vat = ht * (Number(sale.vatRate) / 100);
+      return { ht, vat, ttc: ht + vat };
+    }
+
+    function renderAll() {
+      renderCategoryOptions();
+      renderDashboard();
+      renderEntries();
+      renderClients();
+      renderSales();
+      renderDocuments();
+      renderSettings();
+      renderSaleClientOptions();
+    }
+
+    function renderDashboard() {
+      const month = $("#month-filter").value;
+      const entries = state.entries.filter((entry) => entry.date.startsWith(month));
+      const income = entries.filter((entry) => entry.type === "income").reduce((sum, entry) => sum + entryTotals(entry).ht, 0);
+      const expense = entries.filter((entry) => entry.type === "expense").reduce((sum, entry) => sum + entryTotals(entry).ht, 0);
+      const vat = entries.reduce((sum, entry) => sum + (entry.type === "income" ? entryTotals(entry).vat : -entryTotals(entry).vat), 0);
+      $("#dashboard-title").textContent = `Bienvenue${state.settings.company ? `, ${state.settings.company}` : ""}`;
+      $("#metric-income").textContent = money(income);
+      $("#metric-expense").textContent = money(expense);
+      $("#metric-balance").textContent = money(income - expense);
+      $("#metric-vat").textContent = money(vat);
+      const recent = [...state.entries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
+      $("#recent-rows").innerHTML = recent.length ? recent.map(entryRowSmall).join("") : emptyRow(6, "Aucune écriture pour le moment.");
+    }
+
+    function renderEntries() {
+      const rows = [...state.entries].sort((a, b) => b.date.localeCompare(a.date)).map((entry) => {
+        const totals = entryTotals(entry);
+        return `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.type === "income" ? "Recette" : "Dépense"}</td><td><strong>${escapeHtml(entry.label)}</strong><br><small>${escapeHtml(entry.note || "")}</small></td><td>${escapeHtml(entry.category)}</td><td>${escapeHtml(entry.account)}</td><td class="right">${money(totals.ht)}</td><td class="right">${money(totals.ttc)}</td><td class="right"><button class="btn btn-ghost" type="button" data-collection="entries" data-delete="${entry.id}">Supprimer</button></td></tr>`;
+      });
+      $("#entry-rows").innerHTML = rows.length ? rows.join("") : emptyRow(8, "Aucune écriture enregistrée.");
+    }
+
+    function entryRowSmall(entry) {
+      const totals = entryTotals(entry);
+      return `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.type === "income" ? "Recette" : "Dépense"}</td><td>${escapeHtml(entry.label)}</td><td>${escapeHtml(entry.category)}</td><td><span class="pill ${entry.status === "pending" ? "red" : ""}">${entry.status === "paid" ? "Payée" : "À régler"}</span></td><td class="right">${money(totals.ttc)}</td></tr>`;
+    }
+
+    function renderClients() {
+      $("#client-rows").innerHTML = state.clients.length ? state.clients.map((client) => `<tr><td><strong>${escapeHtml(client.name)}</strong><br><small>${escapeHtml(client.address || "")}</small></td><td>${escapeHtml(client.email || "-")}</td><td>${escapeHtml(client.phone || "-")}</td><td>${escapeHtml(client.terms || "-")}</td><td class="right"><button class="btn btn-ghost" type="button" data-collection="clients" data-delete="${client.id}">Supprimer</button></td></tr>`).join("") : emptyRow(5, "Aucun client enregistré.");
+    }
+
+    function renderSaleClientOptions() {
+      $("#sale-client").innerHTML = state.clients.length ? `<option value="">Sélectionner</option>${state.clients.map((client) => `<option value="${client.id}">${escapeHtml(client.name)}</option>`).join("")}` : `<option value="">Aucun client</option>`;
+    }
+
+    function renderSales() {
+      $("#sale-rows").innerHTML = state.sales.length ? state.sales.map((sale) => {
+        const client = state.clients.find((item) => item.id === sale.clientId);
+        const totals = saleTotals(sale);
+        return `<tr><td>${sale.type === "invoice" ? "Facture" : "Devis"}</td><td><strong>${escapeHtml(sale.number)}</strong></td><td>${escapeHtml(client?.name || "-")}</td><td>${escapeHtml(sale.date)}</td><td><span class="pill blue">${escapeHtml(statusLabel(sale.status))}</span></td><td class="right">${money(totals.ttc)}</td><td class="right"><button class="btn btn-ghost" type="button" data-collection="sales" data-delete="${sale.id}">Supprimer</button></td></tr>`;
+      }).join("") : emptyRow(7, "Aucun devis ou facture enregistré.");
+    }
+
+    function renderDocuments() {
+      $("#document-rows").innerHTML = state.documents.length ? state.documents.map((doc) => `<tr><td><strong>${escapeHtml(doc.filename)}</strong></td><td>${escapeHtml(doc.type)}</td><td>${escapeHtml(doc.date)}</td><td><span class="pill">${escapeHtml(doc.status)}</span></td></tr>`).join("") : emptyRow(4, "Aucun document importé.");
+    }
+
+    function renderSettings() {
+      $("#setting-company").value = state.settings.company || "";
+      $("#setting-currency").value = state.settings.currency || "EUR";
+      $("#setting-email").value = state.settings.email || "";
+      $("#setting-phone").value = state.settings.phone || "";
+      $("#setting-address").value = state.settings.address || "";
+      $("#setting-legal").value = state.settings.legal || "";
+    }
+
+    function statusLabel(status) {
+      return { draft: "Brouillon", sent: "Envoyé", paid: "Payé", accepted: "Accepté", pending: "À régler" }[status] || status;
+    }
+
+    function emptyRow(cols, message) {
+      return `<tr><td class="empty" colspan="${cols}">${message}</td></tr>`;
+    }
+
+    function deleteItem(collection, id) {
+      if (!confirm("Supprimer cet élément ?")) return;
+      state[collection] = state[collection].filter((item) => item.id !== id);
+      saveData();
+      renderAll();
+      showToast("Élément supprimé.");
+    }
+
+    function exportEntriesCsv() {
+      const rows = [["date", "type", "libelle", "categorie", "compte", "montant_ht", "tva", "montant_ttc", "statut"], ...state.entries.map((entry) => {
+        const totals = entryTotals(entry);
+        return [entry.date, entry.type, entry.label, entry.category, entry.account, totals.ht, totals.vat, totals.ttc, entry.status];
+      })];
+      download("ecritures-comptables.csv", rows.map((row) => row.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(",")).join("\n"), "text/csv;charset=utf-8");
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast("Téléchargement préparé.");
+    }
+
+    setMode();
+    renderCategoryOptions();
+  </script>
+</body>
+</html>
