@@ -4,11 +4,10 @@ Application de démonstration pour présenter un système de gestion financière
 
 ## Fichiers
 
-- `index.html` : page d’accueil + inscription/connexion locale.
+- `index.html` : page d’accueil + inscription/connexion locale + page de comptabiliter 
 - `style.css` : design de la page d’accueil.
 - `app.js` : logique d’inscription/connexion locale.
-- `maquette-complete.html` : application complète autonome.
-- `maquette-complete(1).html` : copie de compatibilité de l’application complète.
+
 
 ## Fonctionnalités incluses
 
