@@ -1,6 +1,6 @@
 # Onyxia Gestion
 
-Application de démonstration pour présenter un système de gestion financière sur mesure : clients, devis, factures, dépenses, paiements, documents & IA, rapports et paramètres entreprise.
+Application web  de démonstration pour présenter un système de gestion financière sur mesure : clients, devis, factures, dépenses, paiements, documents & IA, rapports et paramètres entreprise.
 
 ## Fichiers
 
