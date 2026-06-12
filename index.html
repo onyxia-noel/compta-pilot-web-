@@ -258,7 +258,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      gap: 30px;
       color: #fff;
     }
     
@@ -550,7 +550,7 @@
 
   <div class="loading-overlay" id="loading-overlay">
     <div class="loading-content">
-      <l-helix size="45" speed="2.5" color="white"></l-helix>
+      <l-helix size="150" speed="0.5" color="white"></l-helix>
       <p>Accès à l'espace de gestion...</p>
     </div>
   </div>
@@ -656,7 +656,7 @@
         setTimeout(() => {
           renderAll();
           hideLoading();
-        }, 800);
+        }, 20000);
       }
     }
 
