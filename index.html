@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Onyxia Gestion - Application complète</title>
   <meta name="description" content="Onyxia Gestion : accueil, inscription, connexion et espace de saisie comptable dans un seul fichier HTML." />
+  <script src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/helix.js"></script>
   <style>
     :root {
       --bg: #f6f7f4;
@@ -208,7 +209,7 @@
     th, td { border-bottom: 1px solid var(--line); padding: 12px 10px; text-align: left; vertical-align: middle; }
     th { color: var(--muted); font-size: .76rem; text-transform: uppercase; }
     .right { text-align: right; }
-    .pill { display: inline-flex; align-items: center; justify-content: center; min-height: 26px; border-radius: 999px; padding: 0 10px; font-size: .78rem; font-weight: 950; background: #edf2ef; color: var(--green-dark); }
+    .pill { display: inline-flex; align-items: center; justify-content: center; min-height: 26px; border-radius: 999px; padding: 0 10px; font-size: .78rem; font-weight: 950; background: #edf2ef; }
     .pill.red { background: #f8e8e8; color: #8f2d2d; }
     .pill.blue { background: #e7f0f8; color: #275a85; }
     .empty { text-align: center; color: var(--muted); padding: 28px !important; }
@@ -228,6 +229,46 @@
       transition: transform 180ms ease, opacity 180ms ease;
     }
     .toast.visible { opacity: 1; transform: translateY(0); }
+    
+    /* Animation de chargement */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--green-dark), #1f4d38);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .loading-overlay.visible {
+      display: flex;
+      opacity: 1;
+    }
+    
+    .loading-overlay.fade-out {
+      opacity: 0;
+    }
+    
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      color: #fff;
+    }
+    
+    .loading-content p {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
     .footer { padding: 28px 0; color: rgba(255,255,255,.75); background: #101912; }
     .footer-grid { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
 
@@ -301,7 +342,7 @@
                   <article class="mini-card"><small>TVA estimée</small><strong>991 EUR</strong></article>
                 </div>
                 <div class="bars" aria-hidden="true">
-                  <i style="height:32%"></i><i style="height:58%"></i><i style="height:44%"></i><i style="height:72%"></i><i style="height:50%"></i><i style="height:82%"></i><i style="height:62%"></i><i style="height:90%"></i>
+                  <i style="height:32%"></i><i style="height:58%"></i><i style="height:44%"></i><i style="height:72%"></i><i style="height:50%"></i><i style="height:82%"></i><i style="height:62%"></i>
                 </div>
               </div>
             </div>
@@ -314,7 +355,7 @@
           <div class="section-head">
             <p class="eyebrow">Solution</p>
             <h2>Un seul fichier HTML pour présenter et utiliser l'application.</h2>
-            <p class="lead">Cette version fonctionne directement dans le navigateur et sauvegarde les données localement. Elle est idéale pour une démonstration, GitHub Pages ou une première version simple.</p>
+            <p class="lead">Cette version fonctionne directement dans le navigateur et sauvegarde les données localement. Elle est idéale pour une démonstration, GitHub Pages ou une première implémentation.</p>
           </div>
         </div>
       </section>
@@ -358,7 +399,7 @@
               <label><span>Téléphone</span><input type="tel" name="phone" autocomplete="tel" /></label>
               <label><span>Entreprise</span><input type="text" name="company" autocomplete="organization" placeholder="Nom de l'entreprise" /></label>
               <label><span>Pays</span><input type="text" name="country" autocomplete="country-name" /></label>
-              <label><span>Devise</span><select name="currency"><option value="EUR">EUR - Euro</option><option value="USD">USD - Dollar américain</option><option value="GBP">GBP - Livre sterling</option><option value="MUR">MUR - Roupie mauricienne</option><option value="CAD">CAD - Dollar canadien</option><option value="CHF">CHF - Franc suisse</option><option value="AED">AED - Dirham des Émirats</option><option value="XOF">XOF - Franc CFA BCEAO</option><option value="XAF">XAF - Franc CFA BEAC</option></select></label>
+              <label><span>Devise</span><select name="currency"><option value="EUR">EUR - Euro</option><option value="USD">USD - Dollar américain</option><option value="GBP">GBP - Livre sterling</option><option value="CHF">CHF - Franc suisse</option></select></label>
               <label><span>Mot de passe</span><input type="password" name="password" autocomplete="new-password" minlength="6" required /></label>
               <label><span>Confirmer le mot de passe</span><input type="password" name="confirmPassword" autocomplete="new-password" minlength="6" required /></label>
               <label class="wide"><span>Objectif</span><textarea name="goal" rows="3" placeholder="Exemple : suivre mes dépenses et préparer mes exports comptables."></textarea></label>
@@ -409,7 +450,7 @@
       </section>
 
       <section class="view" id="view-accounting">
-        <div class="view-head"><div><p class="eyebrow">Saisie comptable</p><h2>Remplir les données de comptabilité</h2><p class="lead">Ajoutez vos recettes, dépenses, TVA, comptes et notes. Les calculs se mettent à jour automatiquement.</p></div></div>
+        <div class="view-head"><div><p class="eyebrow">Saisie comptable</p><h2>Remplir les données de comptabilité</h2><p class="lead">Ajoutez vos recettes, dépenses, TVA, comptes et notes. Le détail s'exporte en CSV.</p></div></div>
         <div class="grid-2">
           <section class="panel">
             <div class="panel-header"><div><p class="eyebrow">Nouvelle écriture</p><h3>Recette ou dépense</h3></div></div>
@@ -496,7 +537,7 @@
           <div class="panel-header"><div><p class="eyebrow">Paramètres</p><h3>Entreprise</h3></div></div>
           <form class="form-grid" id="settings-form">
             <label><span>Nom entreprise</span><input id="setting-company" type="text" /></label>
-            <label><span>Devise</span><select id="setting-currency"><option value="EUR">EUR - Euro</option><option value="USD">USD - Dollar américain</option><option value="GBP">GBP - Livre sterling</option><option value="MUR">MUR - Roupie mauricienne</option><option value="CAD">CAD - Dollar canadien</option><option value="CHF">CHF - Franc suisse</option><option value="AED">AED - Dirham des Émirats</option><option value="XOF">XOF - Franc CFA BCEAO</option><option value="XAF">XAF - Franc CFA BEAC</option></select></label>
+            <label><span>Devise</span><select id="setting-currency"><option value="EUR">EUR - Euro</option><option value="USD">USD - Dollar américain</option><option value="GBP">GBP - Livre sterling</option><option value="CHF">CHF - Franc suisse</option></select></label>
             <label><span>Email</span><input id="setting-email" type="email" /></label>
             <label><span>Téléphone</span><input id="setting-phone" type="text" /></label>
             <label class="wide"><span>Adresse</span><textarea id="setting-address" rows="2"></textarea></label>
@@ -506,6 +547,13 @@
         </section>
       </section>
     </main>
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-content">
+      <l-helix size="45" speed="2.5" color="white"></l-helix>
+      <p>Accès à l'espace de gestion...</p>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -575,6 +623,19 @@
       showToast.timer = setTimeout(() => toast.classList.remove("visible"), 2600);
     }
 
+    function showLoading() {
+      const overlay = $("#loading-overlay");
+      overlay.classList.add("visible");
+    }
+
+    function hideLoading() {
+      const overlay = $("#loading-overlay");
+      overlay.classList.add("fade-out");
+      setTimeout(() => {
+        overlay.classList.remove("visible", "fade-out");
+      }, 300);
+    }
+
     function showAuth(mode) {
       $$("[data-auth-tab]").forEach((button) => button.classList.toggle("active", button.dataset.authTab === mode));
       $$("[data-auth-form]").forEach((form) => form.classList.toggle("active", form.dataset.authForm === mode));
@@ -590,7 +651,13 @@
 
     function setMode() {
       document.body.classList.toggle("app-mode", Boolean(localStorage.getItem(SESSION_KEY)));
-      if (document.body.classList.contains("app-mode")) renderAll();
+      if (document.body.classList.contains("app-mode")) {
+        showLoading();
+        setTimeout(() => {
+          renderAll();
+          hideLoading();
+        }, 800);
+      }
     }
 
     $$("[data-auth-tab]").forEach((button) => button.addEventListener("click", () => showAuth(button.dataset.authTab)));
@@ -789,18 +856,18 @@
     function renderEntries() {
       const rows = [...state.entries].sort((a, b) => b.date.localeCompare(a.date)).map((entry) => {
         const totals = entryTotals(entry);
-        return `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.type === "income" ? "Recette" : "Dépense"}</td><td><strong>${escapeHtml(entry.label)}</strong><br><small>${escapeHtml(entry.note || "")}</small></td><td>${escapeHtml(entry.category)}</td><td>${escapeHtml(entry.account)}</td><td class="right">${money(totals.ht)}</td><td class="right">${money(totals.ttc)}</td><td class="right"><button class="btn btn-ghost" type="button" data-collection="entries" data-delete="${entry.id}">Supprimer</button></td></tr>`;
+        return `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.type === "income" ? "Recette" : "Dépense"}</td><td><strong>${escapeHtml(entry.label)}</strong><br><small>${escapeHtml(entry.note)}</small></td><td>${escapeHtml(entry.category)}</td><td>${escapeHtml(entry.account)}</td><td class="right">${money(totals.ht)}</td><td class="right"><strong>${money(totals.ttc)}</strong></td><td><button class="btn btn-soft" type="button" data-delete="${entry.id}" data-collection="entries" style="min-height:32px;padding:0 8px">Supprimer</button></td></tr>`;
       });
       $("#entry-rows").innerHTML = rows.length ? rows.join("") : emptyRow(8, "Aucune écriture enregistrée.");
     }
 
     function entryRowSmall(entry) {
       const totals = entryTotals(entry);
-      return `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.type === "income" ? "Recette" : "Dépense"}</td><td>${escapeHtml(entry.label)}</td><td>${escapeHtml(entry.category)}</td><td><span class="pill ${entry.status === "pending" ? "red" : ""}">${entry.status === "paid" ? "Payée" : "À régler"}</span></td><td class="right">${money(totals.ttc)}</td></tr>`;
+      return `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.type === "income" ? "Recette" : "Dépense"}</td><td>${escapeHtml(entry.label)}</td><td>${escapeHtml(entry.category)}</td><td><span class="pill">${escapeHtml(entry.status === "paid" ? "Payée" : "À régler")}</span></td><td class="right"><strong>${money(totals.ttc)}</strong></td></tr>`;
     }
 
     function renderClients() {
-      $("#client-rows").innerHTML = state.clients.length ? state.clients.map((client) => `<tr><td><strong>${escapeHtml(client.name)}</strong><br><small>${escapeHtml(client.address || "")}</small></td><td>${escapeHtml(client.email || "-")}</td><td>${escapeHtml(client.phone || "-")}</td><td>${escapeHtml(client.terms || "-")}</td><td class="right"><button class="btn btn-ghost" type="button" data-collection="clients" data-delete="${client.id}">Supprimer</button></td></tr>`).join("") : emptyRow(5, "Aucun client enregistré.");
+      $("#client-rows").innerHTML = state.clients.length ? state.clients.map((client) => `<tr><td><strong>${escapeHtml(client.name)}</strong><br><small>${escapeHtml(client.address || "")}</small></td><td>${escapeHtml(client.email)}</td><td>${escapeHtml(client.phone)}</td><td>${escapeHtml(client.terms)}</td><td><button class="btn btn-soft" type="button" data-delete="${client.id}" data-collection="clients" style="min-height:32px;padding:0 8px">Supprimer</button></td></tr>`).join("") : emptyRow(5, "Aucun client.");
     }
 
     function renderSaleClientOptions() {
@@ -811,12 +878,12 @@
       $("#sale-rows").innerHTML = state.sales.length ? state.sales.map((sale) => {
         const client = state.clients.find((item) => item.id === sale.clientId);
         const totals = saleTotals(sale);
-        return `<tr><td>${sale.type === "invoice" ? "Facture" : "Devis"}</td><td><strong>${escapeHtml(sale.number)}</strong></td><td>${escapeHtml(client?.name || "-")}</td><td>${escapeHtml(sale.date)}</td><td><span class="pill blue">${escapeHtml(statusLabel(sale.status))}</span></td><td class="right">${money(totals.ttc)}</td><td class="right"><button class="btn btn-ghost" type="button" data-collection="sales" data-delete="${sale.id}">Supprimer</button></td></tr>`;
+        return `<tr><td>${sale.type === "invoice" ? "Facture" : "Devis"}</td><td><strong>${escapeHtml(sale.number)}</strong></td><td>${escapeHtml(client?.name || "-")}</td><td>${escapeHtml(sale.date)}</td><td><span class="pill">${statusLabel(sale.status)}</span></td><td class="right">${money(totals.ttc)}</td><td><button class="btn btn-soft" type="button" data-delete="${sale.id}" data-collection="sales" style="min-height:32px;padding:0 8px">Supprimer</button></td></tr>`;
       }).join("") : emptyRow(7, "Aucun devis ou facture enregistré.");
     }
 
     function renderDocuments() {
-      $("#document-rows").innerHTML = state.documents.length ? state.documents.map((doc) => `<tr><td><strong>${escapeHtml(doc.filename)}</strong></td><td>${escapeHtml(doc.type)}</td><td>${escapeHtml(doc.date)}</td><td><span class="pill">${escapeHtml(doc.status)}</span></td></tr>`).join("") : emptyRow(4, "Aucun document importé.");
+      $("#document-rows").innerHTML = state.documents.length ? state.documents.map((doc) => `<tr><td><strong>${escapeHtml(doc.filename)}</strong></td><td>${escapeHtml(doc.type)}</td><td>${escapeHtml(doc.date)}</td><td><span class="pill">${escapeHtml(doc.status)}</span></td></tr>`).join("") : emptyRow(4, "Aucun document.");
     }
 
     function renderSettings() {
