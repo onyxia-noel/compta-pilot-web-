@@ -557,19 +557,9 @@
 
   <div class="toast" id="toast"></div>
 
-  import { helix } from 'ldrs'
-helix.register()
+  <!-- IMPORTATION LDRS ANIMATION (CORRIGE) -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/helix.js"></script>
 
-// Default values shown
-import { helix } from 'ldrs'
-helix.register()
-
-// Default values shown
-<l-helix
-  size="45"
-  speed="2.5" 
-  color="black" 
-></l-helix>
   <script>
     const USER_KEY = "onyxia_single_user";
     const SESSION_KEY = "onyxia_single_session";
@@ -668,7 +658,7 @@ helix.register()
         setTimeout(() => {
           renderAll();
           hideLoading();
-        }, 20000);
+        }, 1500); // CORRIGE: 1.5 secondes au lieu de 20
       }
     }
 
@@ -939,11 +929,11 @@ helix.register()
       link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
-      showToast("Téléchargement préparé.");
+      showToast("Export réussi.");
     }
-
+    
+    // Initialisation au chargement de la page
     setMode();
-    renderCategoryOptions();
   </script>
 </body>
 </html>
