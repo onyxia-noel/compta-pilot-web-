@@ -557,7 +557,15 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/helix.js"></script>
+  import { helix } from 'ldrs'
+helix.register()
+
+// Default values shown
+<l-helix
+  size="45"
+  speed="2.5" 
+  color="black" 
+></l-helix>
   <script>
     const USER_KEY = "onyxia_single_user";
     const SESSION_KEY = "onyxia_single_session";
